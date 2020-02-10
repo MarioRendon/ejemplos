@@ -1,0 +1,105 @@
+
+        [HttpGet]
+        public async Task<ActionResult> ConsultarClientesActivos()
+        {
+            List<Cliente> lClientes = new List<Cliente>();
+
+            using (var httpClient = new HttpClient())
+            {
+                using (var response = await httpClient.GetAsync("https://localhost:44306/api/Clientes"))
+                {
+                    string apiResponse = await response.Content.ReadAsStringAsync();
+                    lClientes = JsonConvert.DeserializeObject<List<Cliente>>(apiResponse);
+                }
+            }
+
+            return View(lClientes);
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> ConsultarCliente(string documento)
+        {
+            Cliente cliente = new Cliente();
+
+
+
+            using (var httpClient = new HttpClient())
+            {
+
+                var response = await httpClient.GetAsync("https://localhost:44306/api/Clientes/" + documento);
+
+
+                using (response)
+                {
+                    string apiResponse = await response.Content.ReadAsStringAsync();
+                    cliente = JsonConvert.DeserializeObject<Cliente>(apiResponse);
+                }
+            }
+            return View(cliente);
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> InactivarCliente(string documento)
+        {
+
+            string respuesta = "";
+
+
+            using (var httpClient = new HttpClient())
+            {
+
+                var response = await httpClient.DeleteAsync("https://localhost:44306/api/Clientes/" + documento);
+
+
+                using (response)
+                {
+                    respuesta = await response.Content.ReadAsStringAsync();
+
+
+                }
+            }
+            TempData["Mensaje"] = respuesta;
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> ActualizarDatosCliente(string documento)
+        {
+            Cliente cliente = new Cliente();
+
+            using (var httpClient = new HttpClient())
+            {
+
+                var response = await httpClient.GetAsync("https://localhost:44306/api/Clientes/" + documento);
+
+
+                using (response)
+                {
+                    string apiResponse = await response.Content.ReadAsStringAsync();
+                    cliente = JsonConvert.DeserializeObject<Cliente>(apiResponse);
+                }
+            }
+            return View(cliente);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> ActualizarDatosCliente(Cliente datosCliente)
+        {
+            Cliente cliente = new Cliente();
+
+            var jsonDatosCliente = JsonConvert.SerializeObject(datosCliente);
+            var buffer = System.Text.Encoding.UTF8.GetBytes(jsonDatosCliente);
+            var byteContent = new ByteArrayContent(buffer);
+            byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            using (var httpClient = new HttpClient())
+            {
+
+                var response = await httpClient.PutAsync("https://localhost:44306/api/Clientes/", byteContent);
+                using (response)
+                {
+                    string apiResponse = await response.Content.ReadAsStringAsync();
+                    cliente = JsonConvert.DeserializeObject<Cliente>(apiResponse);
+                }
+            }
+            return View(cliente);
+        }
